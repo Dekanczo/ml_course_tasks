@@ -16,11 +16,12 @@ class QuotesSpider(CrawlSpider):#scrapy.Spider):
     DOWNLOADER_MIDDLEWARES = {
         'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 1
     }
-    DOWNLOAD_DELAY = 10
+    DOWNLOAD_DELAY = 7
     RANDOMIZE_DOWNLOAD_DELAY = True
+    CONCURRENT_REQUESTS = 0
     USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36'
+    
     custom_settings = {
-        'DOWNLOAD_TIMEOUT': 10,
         'ROBOTSTXT_OBEY' : False,
         'HTTPERROR_ALLOWED_CODES' : [403, 404, 409, 503],
         'RETRY_ENABLED' : True,
@@ -42,21 +43,20 @@ class QuotesSpider(CrawlSpider):#scrapy.Spider):
             yield scrapy.Request(url=page, 
                                 callback=self.parse, 
                                 method='GET', 
-                                meta={'proxy': '185.23.64.100:3130'}, 
+                                meta={'proxy': '89.186.1.215:53281'}, 
                                 #headers=header,
                                 dont_filter = True)
 
     def parse(self, response):
 
         table = response.xpath('.//table[contains(@class,"mbgen")]/*')
-        artists = table.xpath('.//span[contains(@class, "chart_detail_line1")]/a[1]/text()').extract()
+        artists = table.xpath('.//span[contains(@class, "chart_detail_line1")]/a[1]/text()|.//span[contains(@class, "credited_name")]/text()').extract()
         ratings= table.xpath('.//div[contains(@class, "chart_stats")]//b/text()').extract()
         
         with open('rymData.csv', 'a') as ratcsv:
             ratwriter = csv.writer(ratcsv, delimiter=' ')
             for i in range(len(artists)):
                 ratwriter.writerow([artists[i]] + ratings[3*i:3*(i+1)])
-
 #process = CrawlerProcess(get_project_settings())
 #process.crawl('quotes')
 #process.start() 
