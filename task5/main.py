@@ -4,11 +4,10 @@ from sanic import Sanic
 from sanic.response import json, text, json_dumps
 
 app = Sanic('spasystats')
-
+nlp = spacy.load('en_core_web_sm')
 
 @app.post('/post')
 async def handler(request):
-    nlp = spacy.load('en_core_web_sm')
     body = nlp(request.body.decode('ASCII'))
     entstat = [{'text': ent.text, 'type': ent.label_, 'start': ent.start_char, 'end': ent.end_char} for ent in body.ents]
     return sanic.response.HTTPResponse(body=json_dumps(entstat), content_type='application/json')
